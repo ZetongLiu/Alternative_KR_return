@@ -49,6 +49,31 @@ def generate_kernel_matrix(alpha,
 
     return K
 
+def generate_kernel_matrix_Gauss(sigma,
+    Nmax=3650,
+    Nmax_y=None):
+    '''
+    - Generate a kernel matrix with parameter alpha. No rows or columns correspond to infinite maturity.
+    - Args:
+        - alpha (float): kernel hyper-parameter alpha
+        - Nmax (int): number of rows in the output kernel matrix
+        - Nmax_y (int): number of columns in the output kernel matrix. If it is None, set Nmax_y=Nmax.
+    - Returns:
+        - K (numpy array of dim (Nmax,Nmax_y)): kernel matrix with hyper-paramter alpha
+    '''
+
+    if Nmax_y is None:
+        Nmax_y=Nmax
+    K=np.full((Nmax,Nmax_y),np.nan)
+    for i in range(Nmax):
+        x=(i+1)/365
+        arr_y=np.arange(1,Nmax_y+1)/365
+        K[i,:]=np.exp(-(x-arr_y)**2/(2*sigma**2))
+        
+    return K
+
+
+
 def generate_kernel_vec_inf(alpha,
     delta,
     Nmax=3650):

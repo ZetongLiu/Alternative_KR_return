@@ -90,7 +90,14 @@ df_g_daily = pd.read_pickle('./data_supplement/df_kr_g.pkl')
 
 
 ### generate kernel matrix
-K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
+
+#kr kernel
+# K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
+
+# Gaussian Kernel
+sigma=1
+K= kernel.generate_kernel_matrix_Gauss(sigma, Nmax, Nmax)
+
 # SVD
 U,D_diag,Vh = np.linalg.svd(K)
 V = Vh.T
