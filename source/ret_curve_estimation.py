@@ -63,7 +63,8 @@ if not os.path.isdir(dir_out):
 print('*'*3 +'Save results to: '+ '*'*3+'\n'+dir_out)
 
 ### get path and load lookup table
-dir_B = './B_and_C/B_max_ttm_10yr/'
+dir_base='./Code/Alternative_KR_return'
+dir_B = dir_base+'/B_and_C/B_max_ttm_10yr/'
 df_t_lookup_freq=pd.read_pickle(dir_B+'df_t_lookup_{}.pkl'.format(args.freq))
 df_t_lookup_daily=pd.read_pickle(dir_B+'df_t_lookup_{}.pkl'.format('daily'))
 
@@ -72,31 +73,31 @@ Bc_shift_mat=np.load(dir_B+'Bc_shift_mat.npy')
 with open(dir_B+"dict_par.pkl", "rb") as handle:
     dict_par = pickle.load(handle)
 nmax,Nmax,prefix_C,dir_npz=[dict_par[key] for key in ['nmax','Nmax','prefix_C','npz_dir']]
-
+dir_npz=dir_base+'/B_and_C/npz_C/'
 
 ### load daily risk-free rate
-df_rf=pd.read_pickle('./data_supplement/df_riskfree_daily_all.pkl').KR_LS
+df_rf=pd.read_pickle(dir_base+'/data_supplement/df_riskfree_daily_all.pkl').KR_LS
 
 
 ### load mask
-dir_mask='./mask/'
+dir_mask=dir_base+'/mask/'
 mat_mask_maturity=np.load(dir_mask+'mat_filter_maturity_90days.npy')
 mat_nt=np.load(dir_mask+'mat_nt.npy')
 mat_ytm=np.load(dir_mask+'mat_ytm.npy')
 
 
 ### load daily discount curve
-df_g_daily = pd.read_pickle('./data_supplement/df_kr_g.pkl')
+df_g_daily = pd.read_pickle(dir_base+'/data_supplement/df_kr_g.pkl')
 
 
 ### generate kernel matrix
 
 #kr kernel
-# K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
+K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
 
 # Gaussian Kernel
-sigma=1
-K= kernel.generate_kernel_matrix_Gauss(sigma, Nmax, Nmax)
+# sigma=1
+# K= kernel.generate_kernel_matrix_Gauss(sigma, Nmax, Nmax)
 
 # SVD
 U,D_diag,Vh = np.linalg.svd(K)
@@ -167,6 +168,10 @@ def mp_discount_curve_solution(lst_t_freq):
         else:
             mask_keep=np.full(nt, True)
 
+        # print('dir-npz')
+        # print(dir_npz)
+        # print('prefix_C')
+        # print(prefix_C)
         csr_mat_name=dir_npz+prefix_C+'C_'+str(t)+'.npz'
         csr_mat=sps.load_npz(csr_mat_name)
 
@@ -188,8 +193,12 @@ def mp_discount_curve_solution(lst_t_freq):
         # assert C[:,:date_s-1].sum()==0
 
         # get return of securities
-        rf=(1+df_rf.loc[today_str])**date_s-1 # scalar
-        ret=(Bc_shift-B)/B
+        try:
+            rf=(1+df_rf.loc[today_str])**date_s-1 # scalar
+        except KeyError:
+            print(f'Skip data:{today_str}, KeyError occured.')
+            continue
+        ret=(Bc_shift-B)/B 
         rx=ret-rf
 
         # get one-day excess return of zcb
