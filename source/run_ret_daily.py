@@ -10,13 +10,13 @@ def main():
     cmd = [
         venv_python,
         script_path,
-        f'--idx_ver={3}',
+        f'--idx_ver={9}',
         f'--use_maturity_mask={True}',
         f'--flg_mp={False}',
         f'--num_t_each_trunk={1000}',
         f'--R={10}',
-        f'--l_fixed={10.0}',
-        f'--alpha_fixed={0.05}',
+        f'--l_fixed={1.0}',
+        f'--alpha_fixed={5.0}',
         f'--delta_fixed={0.0}',
         f'--dir_out_base={"./Code/Alternative_KR_return/KR_ret_models/"}'
     ]

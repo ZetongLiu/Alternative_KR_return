@@ -68,6 +68,8 @@ dir_B = dir_base+'/B_and_C/B_max_ttm_10yr/'
 df_t_lookup_freq=pd.read_pickle(dir_B+'df_t_lookup_{}.pkl'.format(args.freq))
 df_t_lookup_daily=pd.read_pickle(dir_B+'df_t_lookup_{}.pkl'.format('daily'))
 
+df_t_lookup_freq=df_t_lookup_freq.iloc[:14866]
+
 B_mat=np.load(dir_B+'B_mat.npy')
 Bc_shift_mat=np.load(dir_B+'Bc_shift_mat.npy')
 with open(dir_B+"dict_par.pkl", "rb") as handle:
@@ -93,11 +95,11 @@ df_g_daily = pd.read_pickle(dir_base+'/data_supplement/df_kr_g.pkl')
 ### generate kernel matrix
 
 #kr kernel
-K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
+# K = kernel.generate_kernel_matrix(args.alpha_fixed, args.delta_fixed, Nmax, Nmax)
 
 # Gaussian Kernel
-# sigma=1
-# K= kernel.generate_kernel_matrix_Gauss(sigma, Nmax, Nmax)
+sigma=args.alpha_fixed
+K= kernel.generate_kernel_matrix_Gauss(sigma, Nmax, Nmax)
 
 # SVD
 U,D_diag,Vh = np.linalg.svd(K)
@@ -193,12 +195,15 @@ def mp_discount_curve_solution(lst_t_freq):
         # assert C[:,:date_s-1].sum()==0
 
         # get return of securities
-        try:
-            rf=(1+df_rf.loc[today_str])**date_s-1 # scalar
-        except KeyError:
-            print(f'Skip data:{today_str}, KeyError occured.')
-            continue
-        ret=(Bc_shift-B)/B 
+        # try:
+        #     rf=(1+df_rf.loc[today_str])**date_s-1 # scalar
+        # except KeyError:
+        #     print(f'Skip data:{today_str}, KeyError occured.')
+        #     continue
+        # ret=(Bc_shift-B)/B 
+        # rx=ret-rf
+        rf=(1+df_rf.loc[today_str])**date_s-1 # scalar
+        ret=(Bc_shift-B)/B
         rx=ret-rf
 
         # get one-day excess return of zcb
